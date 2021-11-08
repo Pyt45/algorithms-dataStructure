@@ -27,7 +27,7 @@ void delete_test(const T val[], size_t N) {
 	std::cout << "size of list: " << l->size() << std::endl;
 }
 
-int main() {
+auto main() -> int{
 	std::cout << "==== push back test ====\n";
 	int arr[] = {1, 2, 3, 4, 5};
     push_back_test<int>(arr, sizeof(arr) / sizeof(int));
@@ -36,4 +36,5 @@ int main() {
 	push_front_test<std::string>(arr1, sizeof(arr1) / sizeof(std::string));
 	std::cout << "==== delete test ====\n";
 	delete_test<std::string>(arr1, sizeof(arr1) / sizeof(std::string));
+	return 0;
 }
