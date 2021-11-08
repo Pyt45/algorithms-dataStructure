@@ -6,10 +6,11 @@
 namespace nds {
 	template<class T>
 	class Node {
+		typedef Node* __pointer;
 		public:
-			T		__data;
-			Node	*__prev;
-			Node	*__next;
+			T			__data;
+			__pointer	__prev;
+			__pointer	__next;
 		public:
 			Node(): __data(), __prev(nullptr), __next(nullptr) {}
 			Node(const T& data): __data(data), __prev(nullptr), __next(nullptr) {}
@@ -25,6 +26,18 @@ namespace nds {
 				return *this;
 			}
 			~Node() {}
+			void push_back(__pointer node) {
+				if (!this->__next) {
+					this->__next = node;
+					node->__prev = this;
+				} else {
+					__pointer tmp = this;
+					while (tmp && tmp->__next)
+						tmp = tmp->__next;
+					tmp->__next = node;
+					node->__prev = tmp;
+				}
+			}
 	};
 	template < class T, class Alloc = std::allocator<T> >
 	class DoubleLinkedList {
@@ -50,6 +63,9 @@ namespace nds {
 				if (node) {
 					if (__head == nullptr) {
 						__head = __tail = node;
+						__size++;
+					} else {
+						__head->push_back(node);
 						__size++;
 					}
 				}
