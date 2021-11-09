@@ -25,7 +25,16 @@ namespace nds {
 				}
 				return *this;
 			}
-			~Node() {}
+			~Node() {
+				__pointer tmp = __root;
+				__pointer next;
+				while (tmp) {
+					next = tmp->__next;
+					__alloc.destroy(tmp);
+					__alloc.deacllocate(tmp, 1);
+					tmp = next;
+				}
+			}
 			void push_back(__pointer node) {
 				if (!this->__next) {
 					this->__next = node;
