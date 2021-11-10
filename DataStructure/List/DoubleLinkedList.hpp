@@ -26,14 +26,6 @@ namespace nds {
 				return *this;
 			}
 			~Node() {
-				__pointer tmp = __root;
-				__pointer next;
-				while (tmp) {
-					next = tmp->__next;
-					__alloc.destroy(tmp);
-					__alloc.deacllocate(tmp, 1);
-					tmp = next;
-				}
 			}
 			void push_back(__pointer node) {
 				if (!this->__next) {
@@ -58,6 +50,16 @@ namespace nds {
 					tmp->__prev = node;
 					node->__next = tmp;
 				}
+			}
+			__pointer delete_self() {
+				// 1 2 3 4 5
+				__pointer node = this;
+				if (this->__prev)
+					this->__prev->__next = this->__next;
+				else if (this->__next)
+					this->__next->__prev = this->__prev;
+				delete this;
+				return node;
 			}
 			__pointer __get_head() {
 				__pointer tmp = this;
@@ -89,17 +91,26 @@ namespace nds {
 				__head = __tail = nullptr;
 				__size = 0;
 			}
-			~DoubleLinkedList() {}
+			~DoubleLinkedList() {
+				__pointer tmp = __head;
+				__pointer next;
+				while (tmp) {
+					next = tmp->__next;
+					__alloc.destroy(tmp);
+					__alloc.deallocate(tmp, 1);
+					tmp = next;
+				}
+			}
 			void push_back(const T& val) {
 				__pointer node = __alloc.allocate(1);
 				__alloc.construct(node, val);
 				if (node) {
 					if (__head == nullptr) {
 						__head = __tail = node;
-						__size++;
+						__size = 1;
 					} else {
-						__head->push_back(node);
-						__tail = __head->__get_tail();
+						__tail->push_back(node);
+						__head = node;
 						__size++;
 					}
 				}
@@ -110,31 +121,49 @@ namespace nds {
 				if (node) {
 					if (__tail == nullptr) {
 						__head = __tail = node;
-						__size++;
+						__size = 1;
 					}
 					else {
-						__tail->push_front(node);
-						__head = __tail->__get_head();
+						__head->push_front(node);
+						__tail = node;
 						__size++;
 					}
 				}
 			}
 			void traverse_forward() {
-				__pointer tmp = __head;
+				__pointer tmp = __tail;
 				while (tmp) {
 					std::cout << tmp->__data << std::endl;
 					tmp = tmp->__next;
 				}
 			}
 			void traverse_backward() {
-				__pointer tmp = __tail;
+				__pointer tmp = __head;
 				while (tmp) {
 					std::cout << tmp->__data << std::endl;
 					tmp = tmp->__prev;
 				}
 			}
-			__pointer find(const T& val);
-			void destory_node(const T& val);
+			__pointer find(const T& val) {
+				__pointer tmp = __tail;
+				while (tmp && tmp->__data != val) {
+					tmp = tmp->__next;
+				}
+				return tmp;
+			}
+			void unlink_node(const T& val) {
+				__pointer tmp = find(val);
+				__pointer node = tmp->delete_self();
+				//__alloc.destroy(tmp);
+				//__alloc.deallocate(tmp, 1);
+				// __head = __tail->__get_head();
+				if (!node->__next && node->__prev)
+					__head = node->__prev;
+				else if (node->__next && !node->__prev)
+					__tail = node->__next;
+				if (--__size == 0)
+					__head = __tail;
+			}
 			size_type size() const {
 				return __size;
 			}
